@@ -1,22 +1,21 @@
 <?php
+// File: database/seeders/DatabaseSeeder.php
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        // Thứ tự phải đúng theo dependency
+        $this->call([
+            AmenitySeeder::class,  // Tiện nghi (không phụ thuộc)
+            UserSeeder::class,     // Users (không phụ thuộc)
+            HotelSeeder::class,    // Hotels (phụ thuộc Users + Amenities)
+            RoomSeeder::class,     // Rooms (phụ thuộc Hotels)
+            BookingSeeder::class,  // Bookings (phụ thuộc Users + Hotels + Rooms)
+        ]);
     }
 }
