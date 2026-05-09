@@ -1,5 +1,4 @@
 <?php
-// File: app/Http/Controllers/Admin/AdminBookingController.php
 
 namespace App\Http\Controllers\Admin;
 
@@ -9,54 +8,60 @@ use Illuminate\Http\Request;
 
 class AdminBookingController extends Controller
 {
-    // Kiểm tra quyền Admin
-    private function checkAdmin(): void
-    {
-        if (!auth()->check() || !auth()->user()->isAdmin()) {
-            abort(403, 'Bạn không có quyền truy cập.');
-        }
-    }
-
-    // Danh sách tất cả bookings (có filter theo status)
     public function index(Request $request)
     {
-        $this->checkAdmin();
+        $query = Booking::with(['hotel', 'room', 'user'])->latest();
 
-        $query = Booking::with(['user', 'hotel', 'room'])->latest();
-
-        // Filter theo status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        $bookings = $query->paginate(15);
+        if ($request->filled('date_from')) {
+            $query->where('check_in_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->where('check_out_date', '<=', $request->date_to);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('booking_reference', 'like', "%{$search}%")
+                  ->orWhere('guest_name', 'like', "%{$search}%")
+                  ->orWhere('guest_email', 'like', "%{$search}%")
+                  ->orWhereHas('hotel', function ($hotel) use ($search) {
+                      $hotel->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $bookings = $query->paginate(20);
 
         return view('admin.bookings.index', compact('bookings'));
     }
 
-    // Chi tiết booking
-    public function show($id)
+    public function show(Booking $booking)
     {
-        $this->checkAdmin();
-
-        $booking = Booking::with(['user', 'hotel', 'room', 'review'])
-            ->findOrFail($id);
-
+        $booking->load(['hotel', 'room', 'user']);
         return view('admin.bookings.show', compact('booking'));
     }
 
-    // Cập nhật trạng thái booking
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, Booking $booking)
     {
-        $this->checkAdmin();
-
-        $request->validate([
+        $validated = $request->validate([
             'status' => 'required|in:pending,confirmed,cancelled,completed',
         ]);
 
-        $booking = Booking::findOrFail($id);
-        $booking->update(['status' => $request->status]);
+        $booking->update(['status' => $validated['status']]);
 
-        return back()->with('success', 'Cập nhật trạng thái thành công.');
+        if ($validated['status'] === 'cancelled') {
+            $booking->update([
+                'cancelled_at'        => now(),
+                'cancellation_reason' => $request->reason ?? 'Cancelled by admin',
+            ]);
+        }
+
+        return back()->with('success', 'Đã cập nhật trạng thái đặt phòng!');
     }
 }

@@ -1,5 +1,4 @@
 <?php
-// File: app/Http/Controllers/BookingController.php
 
 namespace App\Http\Controllers;
 
@@ -10,63 +9,43 @@ use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
-    // Form đặt phòng
-    public function create(Request $request, $roomId)
-    {
-        // Kiểm tra đã đăng nhập
-        if (!Auth::check()) {
-            return redirect()->route('login')
-                ->with('error', 'Vui lòng đăng nhập để đặt phòng.');
-        }
-
-        $room  = Room::with('hotel')->findOrFail($roomId);
-        $hotel = $room->hotel;
-
-        return view('bookings.create', compact('room', 'hotel'));
-    }
-
-    // Lưu booking mới
     public function store(Request $request)
     {
-        // Validate dữ liệu đầu vào
         $validated = $request->validate([
+            'hotel_id'         => 'required|exists:hotels,id',
             'room_id'          => 'required|exists:rooms,id',
             'check_in_date'    => 'required|date|after_or_equal:today',
             'check_out_date'   => 'required|date|after:check_in_date',
-            'number_of_guests' => 'required|integer|min:1',
+            'number_of_guests' => 'required|integer|min:1|max:10',
             'guest_name'       => 'required|string|max:255',
             'guest_email'      => 'required|email|max:255',
             'guest_phone'      => 'nullable|string|max:20',
-            'special_requests' => 'nullable|string',
+            'special_requests' => 'nullable|string|max:1000',
         ]);
 
-        $room  = Room::with('hotel')->findOrFail($validated['room_id']);
-        $hotel = $room->hotel;
+        $room = Room::findOrFail($validated['room_id']);
 
-        // Kiểm tra phòng còn trống
         if (!$room->isAvailable($validated['check_in_date'], $validated['check_out_date'])) {
-            return back()->with('error', 'Phòng không còn trống trong khoảng thời gian này.');
+            return back()->withErrors(['room' => 'Phòng không còn trống trong khoảng thời gian này.']);
         }
 
-        // Tính toán số đêm và tổng tiền
-        $checkIn  = \Carbon\Carbon::parse($validated['check_in_date']);
-        $checkOut = \Carbon\Carbon::parse($validated['check_out_date']);
-        $nights   = $checkIn->diffInDays($checkOut);
+        $checkIn  = new \DateTime($validated['check_in_date']);
+        $checkOut = new \DateTime($validated['check_out_date']);
+        $nights   = $checkIn->diff($checkOut)->days;
 
         $subtotal   = $room->price_per_night * $nights;
-        $taxes      = $subtotal * 0.08; // Thuế 8%
-        $serviceFee = $subtotal * 0.05; // Phí dịch vụ 5%
+        $taxes      = $subtotal * 0.1;
+        $serviceFee = 15;
         $total      = $subtotal + $taxes + $serviceFee;
 
-        // Tạo mã đặt phòng unique
+        // Tạo booking_reference unique
         $bookingReference = 'BK-' . date('Y') . '-' . strtoupper(substr(uniqid(), -6));
 
-        // Lưu booking
         $booking = Booking::create([
             'booking_reference'    => $bookingReference,
             'user_id'              => Auth::id(),
-            'hotel_id'             => $hotel->id,
-            'room_id'              => $room->id,
+            'hotel_id'             => $validated['hotel_id'],
+            'room_id'              => $validated['room_id'],
             'check_in_date'        => $validated['check_in_date'],
             'check_out_date'       => $validated['check_out_date'],
             'number_of_guests'     => $validated['number_of_guests'],
@@ -81,48 +60,41 @@ class BookingController extends Controller
             'guest_email'          => $validated['guest_email'],
             'guest_phone'          => $validated['guest_phone'] ?? null,
             'special_requests'     => $validated['special_requests'] ?? null,
-            'status'               => 'pending',
+            'status'               => 'confirmed',
         ]);
 
-        return redirect()->route('bookings.show', $booking->id)
-            ->with('success', 'Đặt phòng thành công! Mã đặt phòng: ' . $bookingReference);
+        return redirect()->route('bookings.show', $booking)
+            ->with('success', 'Đặt phòng thành công!');
     }
 
-    // Danh sách booking của user hiện tại
-    public function index()
+    public function show(Booking $booking)
     {
-        $bookings = Booking::with(['hotel', 'room'])
-            ->where('user_id', Auth::id())
+        $booking->load(['hotel', 'room', 'user']);
+        return view('bookings.show', compact('booking'));
+    }
+
+    public function myBookings()
+    {
+        $bookings = Booking::where('user_id', Auth::id())
+            ->with(['hotel', 'room'])
             ->latest()
             ->paginate(10);
 
         return view('bookings.index', compact('bookings'));
     }
 
-    // Chi tiết booking
-    public function show($id)
+    public function cancel(Booking $booking)
     {
-        $booking = Booking::with(['hotel', 'room', 'review'])
-            ->where('user_id', Auth::id())
-            ->findOrFail($id);
-
-        return view('bookings.show', compact('booking'));
-    }
-
-    // Hủy booking
-    public function cancel($id)
-    {
-        $booking = Booking::where('user_id', Auth::id())
-            ->findOrFail($id);
-
-        // Chỉ hủy được khi status là pending hoặc confirmed
-        if (!in_array($booking->status, ['pending', 'confirmed'])) {
-            return back()->with('error', 'Không thể hủy booking ở trạng thái này.');
+        if ($booking->user_id !== Auth::id() && !Auth::user()->is_admin) {
+            abort(403);
         }
 
-        $booking->cancel('Khách hàng yêu cầu hủy');
+        if ($booking->status === 'cancelled') {
+            return back()->withErrors(['booking' => 'Đặt phòng đã bị hủy.']);
+        }
 
-        return redirect()->route('bookings.index')
-            ->with('success', 'Hủy đặt phòng thành công.');
+        $booking->cancel('Cancelled by user');
+
+        return back()->with('success', 'Đã hủy đặt phòng thành công.');
     }
 }

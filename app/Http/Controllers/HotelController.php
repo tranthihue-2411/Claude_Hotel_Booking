@@ -1,29 +1,29 @@
 <?php
-// File: app/Http/Controllers/HotelController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\Hotel;
+use App\Models\Amenity;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class HotelController extends Controller
 {
-    // Trang chủ — danh sách khách sạn nổi bật
     public function index()
     {
         $hotels = Hotel::active()
+            ->with('rooms')
             ->orderBy('rating', 'desc')
-            ->paginate(12);
+            ->take(6)
+            ->get();
 
         return view('hotels.index', compact('hotels'));
     }
 
-    // Tìm kiếm khách sạn theo điều kiện
     public function search(Request $request)
     {
-        $query = Hotel::active();
+        $query = Hotel::active()->with('rooms', 'amenities');
 
-        // Tìm theo địa điểm (city hoặc province)
         if ($request->filled('location')) {
             $location = $request->location;
             $query->where(function ($q) use ($location) {
@@ -33,52 +33,66 @@ class HotelController extends Controller
             });
         }
 
-        // Lọc theo khoảng giá (qua bảng rooms)
         if ($request->filled('min_price') || $request->filled('max_price')) {
-            $query->whereHas('rooms', function ($q) use ($request) {
-                if ($request->filled('min_price')) {
-                    $q->where('price_per_night', '>=', $request->min_price);
-                }
-                if ($request->filled('max_price')) {
-                    $q->where('price_per_night', '<=', $request->max_price);
-                }
+            $minPrice = $request->min_price ?? 0;
+            $maxPrice = $request->max_price ?? 9999;
+
+            $query->whereHas('rooms', function ($q) use ($minPrice, $maxPrice) {
+                $q->whereBetween('price_per_night', [$minPrice, $maxPrice]);
             });
         }
 
-        // Lọc theo rating tối thiểu
         if ($request->filled('rating')) {
-            $query->where('rating', '>=', $request->rating);
+            $ratings = is_array($request->rating) ? $request->rating : [$request->rating];
+            $query->whereIn(DB::raw('FLOOR(rating)'), $ratings);
         }
 
-        // Sắp xếp kết quả
-        $sortBy = $request->get('sort_by', 'rating');
-        match ($sortBy) {
-            'price_asc'  => $query->join('rooms', 'hotels.id', '=', 'rooms.hotel_id')
-                                   ->orderBy('rooms.price_per_night', 'asc')
-                                   ->select('hotels.*'),
-            'price_desc' => $query->join('rooms', 'hotels.id', '=', 'rooms.hotel_id')
-                                   ->orderBy('rooms.price_per_night', 'desc')
-                                   ->select('hotels.*'),
-            'name'       => $query->orderBy('name', 'asc'),
-            default      => $query->orderBy('rating', 'desc'),
-        };
+        if ($request->filled('amenities')) {
+            $amenities = is_array($request->amenities) ? $request->amenities : [$request->amenities];
+            $query->whereHas('amenities', function ($q) use ($amenities) {
+                $q->whereIn('amenities.id', $amenities);
+            });
+        }
 
-        $hotels = $query->paginate(12)->withQueryString();
+        $sortBy = $request->get('sort', 'rating-desc');
+        switch ($sortBy) {
+            case 'price-asc':
+                $query->with(['rooms' => function ($q) {
+                    $q->orderBy('price_per_night', 'asc');
+                }]);
+                break;
+            case 'price-desc':
+                $query->with(['rooms' => function ($q) {
+                    $q->orderBy('price_per_night', 'desc');
+                }]);
+                break;
+            case 'rating-desc':
+            default:
+                $query->orderBy('rating', 'desc');
+                break;
+        }
 
-        return view('hotels.search', compact('hotels'));
+        $hotels    = $query->paginate(12);
+        $amenities = Amenity::all();
+
+        return view('hotels.search', compact('hotels', 'amenities'));
     }
 
-    // Chi tiết khách sạn
-    public function show($id)
+    public function show(Hotel $hotel)
     {
-        $hotel = Hotel::with([
-            'rooms'     => fn($q) => $q->active(),
-            'reviews'   => fn($q) => $q->where('is_published', true)
-                                        ->latest()
-                                        ->take(10),
-            'amenities',
-        ])->findOrFail($id);
+        $hotel->load(['rooms' => function ($query) {
+            $query->active();
+        }, 'amenities', 'reviews' => function ($query) {
+            $query->published()->latest()->take(10);
+        }]);
 
-        return view('hotels.show', compact('hotel'));
+        $checkIn  = request('checkin', now()->addDay()->format('Y-m-d'));
+        $checkOut = request('checkout', now()->addDays(2)->format('Y-m-d'));
+
+        $availableRooms = $hotel->rooms->filter(function ($room) use ($checkIn, $checkOut) {
+            return $room->isAvailable($checkIn, $checkOut);
+        });
+
+        return view('hotels.detail', compact('hotel', 'availableRooms'));
     }
 }
