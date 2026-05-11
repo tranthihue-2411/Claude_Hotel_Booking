@@ -15,7 +15,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'is_admin',
+        'name', 'email', 'password', 'is_admin','is_locked'
     ];
 
     protected $hidden = [
@@ -26,6 +26,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password'          => 'hashed',
         'is_admin'          => 'boolean',
+        'is_locked'         => 'boolean',
     ];
 
     // ===== RELATIONSHIPS =====

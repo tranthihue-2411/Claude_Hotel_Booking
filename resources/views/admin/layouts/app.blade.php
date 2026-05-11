@@ -70,6 +70,12 @@
                 <i class="fas fa-calendar-alt" style="width:16px; text-align:center;"></i>
                 Quản lý đặt phòng
             </a>
+            <a href="{{ route('admin.users.index') }}"
+                class="sidebar-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
+                style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; color:#94a3b8; font-size:14px; font-weight:500; text-decoration:none; margin-bottom:4px;">
+                <i class="fas fa-users" style="width:16px; text-align:center;"></i>
+                Quản lý người dùng
+            </a>
 
             <div style="border-top:1px solid rgba(255,255,255,0.08); margin:16px 0;"></div>
 
