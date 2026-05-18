@@ -104,7 +104,7 @@
                         </p>
                     </div>
                     <div class="text-right">
-                        <p class="font-bold text-blue-600 text-sm">${{ number_format($room->price_per_night) }}/đêm</p>
+                        <p class="font-bold text-blue-600 text-sm">{{ number_format($room->price_per_night) }}d/đêm</p>
                         <span class="text-xs {{ $room->is_active ? 'text-emerald-500' : 'text-red-400' }}">
                             <i class="fas fa-circle text-xs mr-0.5"></i>
                             {{ $room->is_active ? 'Hoạt động' : 'Tạm dừng' }}

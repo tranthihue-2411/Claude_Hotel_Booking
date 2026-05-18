@@ -132,6 +132,13 @@
                     class="flex-1 text-center border border-slate-200 text-slate-600 hover:bg-slate-50 py-3 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2">
                     <i class="fas fa-list"></i> Tất cả đặt phòng
                 </a>
+                {{-- THÊM NÚT NÀY --}}
+                @if($booking->status === 'pending')
+                    <a href="{{ route('payment.show', $booking) }}"
+                    class="flex-1 bg-yellow-500 text-white py-3 rounded-lg text-center hover:bg-yellow-600 font-semibold">
+                        💳 Tiếp tục thanh toán
+                    </a>
+                @endif
                 @if($booking->status !== 'cancelled' && $booking->status !== 'completed')
                 <form action="{{ route('bookings.cancel', $booking) }}" method="POST" class="flex-1"
                     onsubmit="return confirm('Bạn có chắc muốn hủy đặt phòng này?')">
@@ -262,30 +269,30 @@
             <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden sticky top-20">
                 <div class="bg-blue-600 px-6 py-5">
                     <p class="text-blue-200 text-xs font-medium mb-1">Tổng thanh toán</p>
-                    <p class="text-white font-bold text-3xl">${{ number_format($booking->total_amount) }}</p>
+                    <p class="text-white font-bold text-3xl">{{ number_format($booking->total_amount) }}đ</p>
                 </div>
                 <div class="p-5 space-y-3">
                     <div class="flex justify-between text-sm">
-                        <span class="text-slate-500">${{ number_format($booking->room_price_per_night) }} × {{ $booking->number_of_nights }} đêm</span>
-                        <span class="text-slate-700 font-medium">${{ number_format($booking->subtotal) }}</span>
+                        <span class="text-slate-500">{{ number_format($booking->room_price_per_night) }}đ × {{ $booking->number_of_nights }} đêm</span>
+                        <span class="text-slate-700 font-medium">{{ number_format($booking->subtotal) }}đ</span>
                     </div>
                     <div class="flex justify-between text-sm">
                         <span class="text-slate-500">Thuế (10%)</span>
-                        <span class="text-slate-700 font-medium">${{ number_format($booking->taxes) }}</span>
+                        <span class="text-slate-700 font-medium">{{ number_format($booking->taxes) }}đ</span>
                     </div>
                     <div class="flex justify-between text-sm">
                         <span class="text-slate-500">Phí dịch vụ</span>
-                        <span class="text-slate-700 font-medium">${{ number_format($booking->service_fee) }}</span>
+                        <span class="text-slate-700 font-medium">{{ number_format($booking->service_fee) }}đ</span>
                     </div>
                     @if($booking->discount > 0)
                     <div class="flex justify-between text-sm">
                         <span class="text-emerald-500">Giảm giá</span>
-                        <span class="text-emerald-500 font-medium">-${{ number_format($booking->discount) }}</span>
+                        <span class="text-emerald-500 font-medium">-{{ number_format($booking->discount) }}đ</span>
                     </div>
                     @endif
                     <div class="flex justify-between font-bold text-slate-800 pt-3 border-t border-slate-100">
                         <span>Tổng cộng</span>
-                        <span class="text-blue-600 text-lg">${{ number_format($booking->total_amount) }}</span>
+                        <span class="text-blue-600 text-lg">{{ number_format($booking->total_amount) }}đ</span>
                     </div>
                 </div>
 

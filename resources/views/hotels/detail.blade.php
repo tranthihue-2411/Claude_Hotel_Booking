@@ -107,7 +107,6 @@
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-2.5">
                     @foreach($hotel->amenities as $amenity)
                     <div class="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2.5 border border-slate-100">
-                        <span>{{ $amenity->icon }}</span>
                         <span class="text-slate-600 text-sm">{{ $amenity->name }}</span>
                     </div>
                     @endforeach
@@ -140,7 +139,7 @@
                             <div class="flex items-start justify-between mb-1">
                                 <h3 class="font-bold text-slate-800 text-sm">{{ $room->name }}</h3>
                                 <div class="text-right ml-3 flex-shrink-0">
-                                    <div class="text-blue-600 font-bold text-base">${{ number_format($room->price_per_night) }}</div>
+                                    <div class="text-blue-600 font-bold text-base">{{ number_format($room->price_per_night) }}đ</div>
                                     <div class="text-slate-400 text-xs">/đêm</div>
                                 </div>
                             </div>
@@ -219,7 +218,7 @@
                     <p class="text-blue-200 text-xs font-medium mb-1">Đặt phòng</p>
                     <div class="flex items-baseline gap-1">
                         <span class="text-white font-bold text-3xl" id="displayPrice">
-                            ${{ number_format($availableRooms->min('price_per_night') ?? 0) }}
+                            {{ number_format($availableRooms->min('price_per_night') ?? 0) }}đ
                         </span>
                         <span class="text-blue-200 text-sm">/đêm</span>
                     </div>
@@ -325,7 +324,7 @@ function selectRoom(roomId, price, name) {
     document.getElementById('room-' + roomId).classList.add('selected');
     document.getElementById('selectedRoomId').value = roomId;
     selectedPrice = price;
-    document.getElementById('displayPrice').textContent = '$' + price.toLocaleString();
+    document.getElementById('displayPrice').textContent = price.toLocaleString('vi-VN') + 'đ';
     document.getElementById('selectedRoomName').textContent = name;
     document.getElementById('bookHint').textContent = 'Chọn ngày để xem tổng giá';
     updatePrice();
@@ -342,10 +341,10 @@ function updatePrice() {
     const tax = Math.round(subtotal * 0.1);
     const total = subtotal + tax + 15;
 
-    document.getElementById('priceLabel').textContent = `$${selectedPrice} × ${nights} đêm`;
-    document.getElementById('subtotalVal').textContent = `$${subtotal}`;
-    document.getElementById('taxVal').textContent = `$${tax + 15}`;
-    document.getElementById('totalVal').textContent = `$${total}`;
+    document.getElementById('priceLabel').textContent = subtotal.toLocaleString('vi-VN') + 'đ / ' + nights + ' đêm';
+    document.getElementById('subtotalVal').textContent = subtotal.toLocaleString('vi-VN') + 'đ';
+    document.getElementById('taxVal').textContent = (tax + 15).toLocaleString('vi-VN') + 'đ';
+    document.getElementById('totalVal').textContent = total.toLocaleString('vi-VN') + 'đ';
     document.getElementById('priceBreakdown').classList.remove('hidden');
     document.getElementById('bookHint').textContent = '';
 }

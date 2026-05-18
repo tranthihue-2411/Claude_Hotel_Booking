@@ -145,30 +145,30 @@
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
             <div class="bg-blue-600 px-6 py-5">
                 <p class="text-blue-200 text-xs font-medium mb-1">Tổng thanh toán</p>
-                <p class="text-white font-bold text-3xl">${{ number_format($booking->total_amount) }}</p>
+                <p class="text-white font-bold text-3xl">{{ number_format($booking->total_amount) }}d</p>
             </div>
             <div class="p-5 space-y-3">
                 <div class="flex justify-between text-sm">
-                    <span class="text-slate-500">${{ number_format($booking->room_price_per_night) }} × {{ $booking->number_of_nights }} đêm</span>
-                    <span class="font-medium text-slate-700">${{ number_format($booking->subtotal) }}</span>
+                    <span class="text-slate-500">{{ number_format($booking->room_price_per_night) }}d × {{ $booking->number_of_nights }} đêm</span>
+                    <span class="font-medium text-slate-700">{{ number_format($booking->subtotal) }}d</span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-slate-500">Thuế (10%)</span>
-                    <span class="font-medium text-slate-700">${{ number_format($booking->taxes) }}</span>
+                    <span class="font-medium text-slate-700">{{ number_format($booking->taxes) }}d</span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-slate-500">Phí dịch vụ</span>
-                    <span class="font-medium text-slate-700">${{ number_format($booking->service_fee) }}</span>
+                    <span class="font-medium text-slate-700">{{ number_format($booking->service_fee) }}d</span>
                 </div>
                 @if($booking->discount > 0)
                 <div class="flex justify-between text-sm">
                     <span class="text-emerald-500">Giảm giá</span>
-                    <span class="text-emerald-500 font-medium">-${{ number_format($booking->discount) }}</span>
+                    <span class="text-emerald-500 font-medium">-{{ number_format($booking->discount) }}d</span>
                 </div>
                 @endif
                 <div class="flex justify-between font-bold text-slate-800 pt-3 border-t border-slate-100">
                     <span>Tổng cộng</span>
-                    <span class="text-blue-600 text-lg">${{ number_format($booking->total_amount) }}</span>
+                    <span class="text-blue-600 text-lg">{{ number_format($booking->total_amount) }}d</span>
                 </div>
             </div>
         </div>

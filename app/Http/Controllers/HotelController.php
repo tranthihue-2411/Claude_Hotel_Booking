@@ -22,7 +22,7 @@ class HotelController extends Controller
 
     public function search(Request $request)
     {
-        $query = Hotel::active()->with('rooms', 'amenities');
+        $query = Hotel::where('hotels.is_active', true)->with('rooms', 'amenities');
 
         if ($request->filled('location')) {
             $location = $request->location;
@@ -57,18 +57,14 @@ class HotelController extends Controller
         $sortBy = $request->get('sort', 'rating-desc');
         switch ($sortBy) {
             case 'price-asc':
-                $query->with(['rooms' => function ($q) {
-                    $q->orderBy('price_per_night', 'asc');
-                }]);
+                $query->orderByRaw('(SELECT MIN(price_per_night) FROM rooms WHERE rooms.hotel_id = hotels.id AND rooms.is_active = 1) ASC');
                 break;
             case 'price-desc':
-                $query->with(['rooms' => function ($q) {
-                    $q->orderBy('price_per_night', 'desc');
-                }]);
+                $query->orderByRaw('(SELECT MIN(price_per_night) FROM rooms WHERE rooms.hotel_id = hotels.id AND rooms.is_active = 1) DESC');
                 break;
             case 'rating-desc':
             default:
-                $query->orderBy('rating', 'desc');
+                $query->orderBy('hotels.rating', 'desc');
                 break;
         }
 

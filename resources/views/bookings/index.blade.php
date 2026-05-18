@@ -90,13 +90,20 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <span class="text-slate-400 text-xs">Tổng tiền</span>
-                        <span class="text-blue-600 font-bold text-xl ml-2">${{ number_format($booking->total_amount) }}</span>
+                        <span class="text-blue-600 font-bold text-xl ml-2">{{ number_format($booking->total_amount) }}đ</span>
                     </div>
                     <div class="flex gap-2">
                         <a href="{{ route('bookings.show', $booking) }}"
                             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5">
                             <i class="fas fa-eye"></i> Chi tiết
                         </a>
+                        {{-- THÊM NÚT NÀY --}}
+                        @if($booking->status === 'pending')
+                            <a href="{{ route('payment.show', $booking) }}"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 font-semibold">
+                                💳 Tiếp tục thanh toán
+                            </a>
+                        @endif
                         @if($booking->status !== 'cancelled' && $booking->status !== 'completed')
                         <form action="{{ route('bookings.cancel', $booking) }}" method="POST"
                             onsubmit="return confirm('Bạn có chắc muốn hủy đặt phòng này?')">

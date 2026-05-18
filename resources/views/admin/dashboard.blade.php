@@ -11,7 +11,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-gray-500 text-sm">Tổng doanh thu</p>
-                <p class="text-2xl font-bold text-gray-800 mt-1">${{ number_format($totalRevenue) }}</p>
+                <p class="text-2xl font-bold text-gray-800 mt-1">{{ number_format($totalRevenue) }}d</p>
                 <p class="text-sm mt-1 {{ $revenueTrend >= 0 ? 'text-green-500' : 'text-red-500' }}">
                     <i class="fas fa-arrow-{{ $revenueTrend >= 0 ? 'up' : 'down' }} mr-1"></i>
                     {{ abs($revenueTrend) }}% so với tháng trước
@@ -106,7 +106,7 @@
                                 {{ ucfirst($booking->status) }}
                             </span>
                         </td>
-                        <td class="py-3 font-medium text-gray-800">${{ number_format($booking->total_amount) }}</td>
+                        <td class="py-3 font-medium text-gray-800">{{ number_format($booking->total_amount) }}d</td>
                     </tr>
                     @endforeach
                 </tbody>

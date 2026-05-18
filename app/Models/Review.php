@@ -40,4 +40,10 @@ class Review extends Model
     {
         return $this->belongsTo(Booking::class);
     }
+    // ===== SCOPES =====
+
+    public function scopePublished($query)
+    {
+        return $query->where('is_published', true);
+    }
 }

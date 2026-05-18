@@ -160,7 +160,7 @@
                         <label class="checkbox-label">
                             <input type="checkbox" name="amenities[]" value="{{ $amenity->id }}"
                                 {{ in_array($amenity->id, (array)request('amenities', [])) ? 'checked' : '' }}>
-                            <span>{{ $amenity->icon }} {{ $amenity->name }}</span>
+                            <span>{{ $amenity->name }}</span>
                         </label>
                         @endforeach
                     </div>
@@ -244,7 +244,7 @@
                             <div class="flex flex-wrap gap-2">
                                 @foreach($hotel->amenities->take(4) as $amenity)
                                 <span class="bg-slate-50 text-slate-500 text-xs px-2.5 py-1 rounded-lg border border-slate-100">
-                                    {{ $amenity->icon }} {{ $amenity->name }}
+                                    {{ $amenity->name }}
                                 </span>
                                 @endforeach
                                 @if($hotel->amenities->count() > 4)
@@ -261,7 +261,7 @@
                             <div>
                                 <span class="text-slate-400 text-xs">Chỉ từ</span>
                                 <span class="text-blue-600 font-bold text-2xl ml-1">
-                                    ${{ number_format($hotel->rooms->min('price_per_night') ?? 0) }}
+                                    {{ number_format($hotel->rooms->min('price_per_night') ?? 0) }}đ
                                 </span>
                                 <span class="text-slate-400 text-xs">/đêm</span>
                             </div>

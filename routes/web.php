@@ -5,6 +5,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PaymentController;
 
 // Public routes
 Route::get('/', [HotelController::class, 'index'])->name('home');
@@ -32,4 +33,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
+    //Payment
+    Route::get('/payment/{booking}', [PaymentController::class, 'show'])->name('payment.show');
+    Route::post('/payment/{booking}/process', [PaymentController::class, 'process'])->name('payment.process');
 });

@@ -98,7 +98,7 @@
                     </span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <span class="font-bold text-slate-700 text-sm">${{ number_format($booking->total_amount) }}</span>
+                    <span class="font-bold text-slate-700 text-sm">{{ number_format($booking->total_amount) }}d</span>
                 </td>
                 <td class="px-6 py-4 text-center">
                     <a href="{{ route('admin.bookings.show', $booking) }}"

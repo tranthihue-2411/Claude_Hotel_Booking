@@ -190,7 +190,7 @@
     <!-- Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @foreach($hotels as $hotel)
-        <div class="hotel-card bg-white rounded-2xl overflow-hidden border border-slate-100">
+       <div class="hotel-card bg-white rounded-2xl overflow-hidden border border-slate-100 flex flex-col">
             <!-- Image -->
             <div class="relative overflow-hidden h-52">
                 <img src="{{ $hotel->main_image ?? 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop' }}"
@@ -213,27 +213,27 @@
             </div>
 
             <!-- Body -->
-            <div class="p-5">
+            <div class="p-5 flex flex-col flex-1">
                 <h3 class="font-bold text-slate-800 text-base mb-1 leading-snug">{{ $hotel->name }}</h3>
                 <p class="text-slate-400 text-xs leading-relaxed mb-4 line-clamp-2">{{ $hotel->description }}</p>
 
                 <!-- Amenities -->
-                @if($hotel->amenities && $hotel->amenities->count() > 0)
-                <div class="flex gap-1.5 mb-4 flex-wrap">
-                    @foreach($hotel->amenities->take(3) as $amenity)
-                    <span class="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg border border-slate-100">
-                        {{ $amenity->icon }} {{ $amenity->name }}
-                    </span>
-                    @endforeach
+                <div class="flex gap-1.5 mb-4 flex-wrap" style="min-height: 28px;">
+                    @if($hotel->amenities && $hotel->amenities->count() > 0)
+                        @foreach($hotel->amenities->take(3) as $amenity)
+                        <span class="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg border border-slate-100">
+                            {{ $amenity->name }}
+                        </span>
+                        @endforeach
+                    @endif
                 </div>
-                @endif
 
                 <!-- Footer -->
-                <div class="flex items-center justify-between pt-4 border-t border-slate-50">
+                <div class="flex items-center justify-between pt-4 border-t border-slate-50 mt-auto">
                     <div>
                         <span class="text-slate-400 text-xs">Từ</span>
                         <span class="text-blue-600 font-bold text-2xl ml-1">
-                            ${{ number_format($hotel->rooms->min('price_per_night') ?? 0) }}
+                            {{ number_format($hotel->rooms->min('price_per_night') ?? 0) }}đ
                         </span>
                         <span class="text-slate-400 text-xs">/đêm</span>
                     </div>
