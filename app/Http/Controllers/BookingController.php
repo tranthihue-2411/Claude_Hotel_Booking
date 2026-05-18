@@ -73,13 +73,27 @@ class BookingController extends Controller
         return view('bookings.show', compact('booking'));
     }
 
-    public function myBookings()
+    public function myBookings(Request $request)
     {
-        $bookings = Booking::where('user_id', Auth::id())
+        $query = Booking::where('user_id', Auth::id())
             ->with(['hotel', 'room'])
-            ->latest()
-            ->paginate(10);
+            ->latest();
 
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('booking_reference', 'like', "%{$search}%")
+                ->orWhereHas('hotel', function ($q2) use ($search) {
+                    $q2->where('name', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $bookings = $query->paginate(10);
         return view('bookings.index', compact('bookings'));
     }
 

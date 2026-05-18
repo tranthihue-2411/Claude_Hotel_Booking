@@ -19,18 +19,38 @@
 <!-- Page Header -->
 <div class="bg-white border-b border-slate-100">
     <div class="max-w-5xl mx-auto px-6 py-6">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between mb-4">
             <div>
                 <p class="text-blue-600 text-xs font-bold uppercase tracking-widest mb-1">
                     <i class="fas fa-calendar-alt mr-1"></i> Lịch sử
                 </p>
                 <h1 class="text-2xl font-bold text-slate-800">Đặt phòng của tôi</h1>
             </div>
-            <a href="{{ route('hotels.search') }}"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2">
-                <i class="fas fa-search"></i> Tìm khách sạn mới
-            </a>
         </div>
+
+        <form action="{{ route('bookings.index') }}" method="GET" class="flex gap-3">
+            <input type="text" name="search" value="{{ request('search') }}"
+                placeholder="Tìm theo tên khách sạn, mã đặt phòng..."
+                class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select name="status"
+                class="px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700">
+                <option value="">Tất cả trạng thái</option>
+                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>⏳ Chờ thanh toán</option>
+                <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>✅ Đã xác nhận</option>
+                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>🏁 Hoàn thành</option>
+                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>❌ Đã hủy</option>
+            </select>
+            <button type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2">
+                <i class="fas fa-search"></i> Tìm
+            </button>
+            @if(request('search') || request('status'))
+            <a href="{{ route('bookings.index') }}"
+                class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2">
+                <i class="fas fa-times"></i> Xóa lọc
+            </a>
+            @endif
+        </form>
     </div>
 </div>
 
